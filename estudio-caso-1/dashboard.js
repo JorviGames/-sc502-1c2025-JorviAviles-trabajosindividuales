@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function(){
+document.addEventListener('DOMContentLoaded', function () {
 
     // Datos ficticios para tareas
     const tasks = [
@@ -20,18 +20,18 @@ document.addEventListener('DOMContentLoaded', function(){
             description: "Review the codebase and ensure all pull requests are merged.",
             due_date: "2024-08-27"
         }
-    ];    
+    ];
 
     let editingTaskId = null;
     let taskCounter = tasks.length;
+    let currentTaskId = null;
 
     //carga las tareas en el DOM
-    function loadTasks(){
+    function loadTasks() {
         const taskList = document.getElementById('task-list');
         taskList.innerHTML = '';
-
-        tasks.forEach(function(task){
-            //aqui vamos a tener un element del arreglo de tareas por cada uno de los elementos
+    
+        tasks.forEach(function(task) {
             const taskCard = document.createElement('div');
             taskCard.className = 'col-md-4 mb-3';
             taskCard.innerHTML = `
@@ -39,9 +39,15 @@ document.addEventListener('DOMContentLoaded', function(){
                 <div class="card-body">
                     <h5 class="card-title">${task.title}</h5>
                     <p class="card-text">${task.description}</p>
-                    <p class="card-text text-muted" > ${task.due_date}</p>
+                    <p class="card-text text-muted">${task.due_date}</p>
+                    <div class="comments-section mt-3" style="display: none;">
+                        <ul class="list-group comments-list" id="comments-list-${task.id}">
+                            <!-- Aquí se agregarán los comentarios dinámicamente -->
+                        </ul>
+                    </div>
                 </div>
                 <div class="card-footer d-flex justify-content-between">
+                    <button class="btn btn-primary btn-sm" onclick="showCommentsModal(${task.id})">Ver Comentarios</button>
                     <button class="btn btn-secondary btn-sm edit-task" data-id="${task.id}">Edit</button>
                     <button class="btn btn-danger btn-sm delete-task" data-id="${task.id}">Delete</button>
                 </div>
@@ -49,24 +55,16 @@ document.addEventListener('DOMContentLoaded', function(){
             `;
             taskList.appendChild(taskCard);
         });
-        console.log(tasks);
-
-        //selecciona todos los botones que tengan la clase edit-task
-        document.querySelectorAll('.edit-task').forEach(function(btnEdit){
-            //para cada boton, vamos a manajar el evento click, este evento lo va a manejar la funcion handleEditTask 
-            //definida mas abajo.
+    
+        document.querySelectorAll('.edit-task').forEach(function(btnEdit) {
             btnEdit.addEventListener('click', handleEditTask);
         });
-
-        document.querySelectorAll('.delete-task').forEach(function(btnDelete){
-            //para cada boton, vamos a manajar el evento click, este evento lo va a manejar la funcion handleEditTask 
-            //definida mas abajo.
+    
+        document.querySelectorAll('.delete-task').forEach(function(btnDelete) {
             btnDelete.addEventListener('click', handleDeleteTask);
         });
-    
     }
-
-    function handleEditTask(event){
+    function handleEditTask(event) {
         // alert('se presiono el boton con taskid ' + event.target.dataset.id);
         //obtener la tarea que el usuario selecciono
         editingTaskId = parseInt(event.target.dataset.id);
@@ -83,52 +81,52 @@ document.addEventListener('DOMContentLoaded', function(){
         modal.show();
     }
 
-    function handleDeleteTask(event){
+    function handleDeleteTask(event) {
         const id = parseInt(event.target.dataset.id);
-        const taskIndex = tasks.findIndex( t => t.id === id);
-        tasks.splice(taskIndex,1);
+        const taskIndex = tasks.findIndex(t => t.id === id);
+        tasks.splice(taskIndex, 1);
         loadTasks();
     }
 
-    document.getElementById('task-form').addEventListener('submit',function(e){
+    document.getElementById('task-form').addEventListener('submit', function (e) {
         e.preventDefault();
         const title = document.getElementById('task-title').value;
         const description = document.getElementById('task-desc').value;
         const dueDate = document.getElementById('due-date').value;
 
-        if(!editingTaskId){
+        if (!editingTaskId) {
             //modo agregar tarea
             taskCounter = taskCounter + 1;
             const newTask = {
                 id: taskCounter,
-                title:title,
+                title: title,
                 description: description,
                 due_date: dueDate
             };
             tasks.push(newTask);
-        }else{
+        } else {
             //modo de edicion
-            let task = tasks.find( t => t.id === editingTaskId);
+            let task = tasks.find(t => t.id === editingTaskId);
             task.title = title;
             task.description = description;
             task.due_date = dueDate;
         }
-        
+
         const modal = bootstrap.Modal.getInstance(document.getElementById('taskModal'));
         modal.hide();
         loadTasks();
     });
 
-    document.getElementById('taskModal').addEventListener('show.bs.modal',function(){
-        if(!editingTaskId){
+    document.getElementById('taskModal').addEventListener('show.bs.modal', function () {
+        if (!editingTaskId) {
             //solo si estamos en modo agregar
             document.getElementById('task-form').reset();
             document.getElementById('taskModalLabel').textContent = 'Add Task';
         }
-        
+
     });
 
-    document.getElementById('taskModal').addEventListener('hidden.bs.modal', function(){
+    document.getElementById('taskModal').addEventListener('hidden.bs.modal', function () {
         editingTaskId = null;
     })
 
@@ -136,3 +134,39 @@ document.addEventListener('DOMContentLoaded', function(){
     loadTasks();
 
 });
+
+function showCommentsModal(taskId) {
+    currentTaskId = taskId;
+    const commentsList = document.getElementById(`comments-list-${taskId}`);
+    const modalCommentsList = document.getElementById('modal-comments-list');
+    modalCommentsList.innerHTML = commentsList.innerHTML;
+
+    const modal = new bootstrap.Modal(document.getElementById('commentsModal'));
+    modal.show();
+}
+
+document.getElementById('modal-add-comment-btn').addEventListener('click', function() {
+    const commentInput = document.getElementById('modal-comment-input');
+    const commentText = commentInput.value;
+    if (commentText.trim() !== "") {
+        const commentsList = document.getElementById(`comments-list-${currentTaskId}`);
+        const newComment = document.createElement("li");
+        newComment.className = "list-group-item d-flex justify-content-between align-items-center";
+        newComment.innerHTML = `${commentText} <button class="btn btn-danger btn-sm" onclick="deleteComment(this)">Delete</button>`;
+        commentsList.appendChild(newComment);
+
+        const modalCommentsList = document.getElementById('modal-comments-list');
+        const modalNewComment = newComment.cloneNode(true);
+        modalNewComment.querySelector('button').addEventListener('click', function() {
+            deleteComment(modalNewComment);
+        });
+        modalCommentsList.appendChild(modalNewComment);
+
+        commentInput.value = "";
+    }
+});
+
+function deleteComment(button) {
+    const comment = button.parentElement;
+    comment.remove();
+}
