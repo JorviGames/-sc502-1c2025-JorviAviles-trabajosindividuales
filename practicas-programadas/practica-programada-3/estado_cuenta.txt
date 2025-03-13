@@ -1,0 +1,14 @@
+ESTADO DE CUENTA
+-------------------------------------
+Transacciones:
+ID: 1 | Descripción: asda | Monto: ₡14,424.00
+ID: 2 | Descripción: adwasg | Monto: ₡123.00
+ID: 3 | Descripción: asdac | Monto: ₡123,124.00
+ID: 4 | Descripción: sadadwgasc | Monto: ₡125,123,512.00
+ID: 5 | Descripción: carrera | Monto: ₡50,000.00
+ID: 6 | Descripción: comida | Monto: ₡1,234,552.00
+-------------------------------------
+Monto total de contado: ₡126,545,735.00
+Monto total con interés (2.6%): ₡129,835,924.11
+Cashback aplicado (0.1%): ₡126,545.74
+Monto final a pagar: ₡129,709,378.38
