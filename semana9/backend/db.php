@@ -2,7 +2,7 @@
 
 $host = 'localhost';
 $dbname = "todo_app";
-$user = "Jorvi@localhost";
+$user = "Jorvi";
 $password = "132430jorviA";
 
 try {
